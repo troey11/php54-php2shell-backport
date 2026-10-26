@@ -5,7 +5,7 @@ to the Ubuntu 12.10 (quantal) package **php5 5.4.6-1ubuntu1.8**, plus the script
 build, test, deploy and roll it back on an Apache 2.2 + mod_php host.
 
 > **This is not an official PHP or Ubuntu release.** PHP 5.4 has been end-of-life since 2015
-> and Ubuntu 12.10 since 16 May 2014. This patch closes only these two CVEs; every other
+> and Ubuntu 12.10 since 16 May 2014. This patch addresses only these two CVEs; every other
 > vulnerability found since then is still present. The only complete fix is to move to a
 > supported PHP version on a supported OS. Use this to buy time, not as a destination.
 
@@ -19,6 +19,27 @@ build, test, deploy and roll it back on an Apache 2.2 + mod_php host.
 Fixed upstream in PHP 8.5.12, 8.4.27, 8.3.36 and 8.2.35; the PHP team published minimal
 backports for 7.4, 8.0 and 8.1. Advisory summary:
 [CERT-EU 2026-018](https://cert.europa.eu/publications/security-advisories/2026-018).
+
+### Is PHP 5.4 affected by both CVEs?
+
+- **CVE-2026-109619: yes.** Session upload progress, the confirmed attack path, exists since
+  PHP 5.4.0 and is enabled by default.
+- **CVE-2026-109618: disputed.** The official advisory lists only `< 8.2.35 / 8.3.36 / 8.4.27 /
+  8.5.12` and does not say which release introduced the bug. CERT-EU treats all end-of-life
+  branches (8.1 and older) as affected. The
+  [alvm/php2shell-eol-backport](https://github.com/alvm/php2shell-eol-backport) project states
+  that the memory corruption is in hash-table code first released in PHP 7.3.0 (php-src commit
+  `6de54703f`), quotes Red Hat as saying the code is not present in RHEL 7's PHP 5.4.16, and
+  concludes that on PHP 5.3/5.4 the fix matters mainly for CVE-2026-109619. We have not
+  verified either position ourselves.
+- **What this patch does about it:** it applies the full upstream change set anyway
+  (no `longjmp()` on OOM, multipart header/part limits). If CVE-2026-109618 does not apply to
+  5.4, those parts are hardening rather than a fix; they cost nothing in the reference tests.
+
+Sources: [GHSA-w8hw-w9fx-j79w](https://github.com/php/php-src/security/advisories/GHSA-w8hw-w9fx-j79w),
+[CERT-EU 2026-018](https://cert.europa.eu/publications/security-advisories/2026-018),
+[Red Hat CVE-2026-109618](https://access.redhat.com/security/cve/cve-2026-109618),
+[alvm/php2shell-eol-backport](https://github.com/alvm/php2shell-eol-backport).
 
 ## What the patch changes
 
@@ -108,6 +129,15 @@ Only i386 was built and tested. amd64 should work with `ARCH=amd64` but has not 
   hardening from upstream (DoS hardening, not the RCE path).
 - No warranty. Review the diff in `patches/` before building.
 
+## Related projects
+
+| Project | Targets | Notes |
+|---|---|---|
+| [alvm/php2shell-eol-backport](https://github.com/alvm/php2shell-eol-backport) | RHEL/CentOS 7 `php-5.4.16`, RHEL/CentOS 6 `php-5.3.3` | Port of the official 7.4 backport (php-src `712e60f9ed`); signed YUM repository with prebuilt RPMs. Its PHP test-suite run shows the same new failures as ours (upload-progress tests and `bug45392.phpt`). |
+| [vperetti/php-cve-2026-109618-109619-backports](https://github.com/vperetti/php-cve-2026-109618-109619-backports) | Upstream tarballs 5.4.45 … 7.3.33 | Source patches; the 5.4 patch is the starting point of this repository. |
+
+This repository covers the Ubuntu 12.10 `php5 5.4.6` packages, which neither project above targets.
+
 ## Licensing
 
 - Scripts and documentation: MIT, see [LICENSE](LICENSE).
@@ -119,5 +149,7 @@ Only i386 was built and tested. amd64 should work with `ARCH=amd64` but has not 
 
 Backport tidak resmi untuk menutup CVE-2026-109618 dan CVE-2026-109619 di PHP 5.4.6
 (paket Ubuntu 12.10), lengkap dengan script build di chroot, uji regresi, deploy bertahap
-(precheck → install → verify) dan rollback. Ini hanya tambalan sementara: PHP 5.4 dan
+(precheck → install → verify) dan rollback. Catatan: apakah CVE-2026-109618 berlaku untuk
+PHP 5.4 masih diperdebatkan (lihat bagian "Is PHP 5.4 affected by both CVEs?"); CVE-2026-109619
+jelas berlaku. Ini hanya tambalan sementara: PHP 5.4 dan
 Ubuntu 12.10 sudah lama tidak didukung, jadi rencanakan migrasi ke PHP yang masih didukung.
