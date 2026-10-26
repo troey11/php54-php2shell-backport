@@ -1,0 +1,16 @@
+patches/CVE-2026-109618-109619-backport-5.4.6.patch
+
+This patch modifies the PHP source code (Zend Engine and main/), which is licensed under the
+PHP License v3.01 (https://www.php.net/license/3_01.txt) and the Zend Engine License v2.00.
+The patch is distributed under those same licenses.
+
+The fix logic comes from the PHP security team's fixes for CVE-2026-109618 and
+CVE-2026-109619 (GHSA-w8hw-w9fx-j79w, GHSA-6wmf-4rv5-p3rp) and their minimal backports.
+It was adapted from the PHP 5.4.45 backport published at
+https://github.com/vperetti/php-cve-2026-109618-109619-backports
+That repository does not state a license. Credit for the 5.4 backport goes to its author.
+If you are the author and want this attribution changed or the derived patch removed,
+please open an issue.
+
+Everything else in this repository (scripts, documentation) is under the MIT License
+(see LICENSE).

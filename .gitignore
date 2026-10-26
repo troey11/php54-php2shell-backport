@@ -1,0 +1,7 @@
+# build output and backups never belong in the repo
+*.deb
+*.changes
+*.tgz
+*.log
+php-rollback-*/
+baseline/
